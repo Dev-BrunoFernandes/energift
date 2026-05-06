@@ -1,0 +1,11 @@
+﻿namespace Energift.Fiap.Application.Dtos.Consumo
+{
+    public class ConsumoRequest
+    {
+        public int UsuarioId { get; set; }
+        public int ImovelId { get; set; }
+        public DateTime Referencia { get; set; }
+        public decimal Kwh { get; set; }
+        public decimal Valor { get; set; }
+    }
+}

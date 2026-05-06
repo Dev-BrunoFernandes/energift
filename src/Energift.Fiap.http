@@ -1,0 +1,6 @@
+@Energift.Fiap_HostAddress = http://localhost:5245
+
+GET {{Energift.Fiap_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

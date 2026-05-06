@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Energift | Painel</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="hero">
+      <div>
+        <span class="eyebrow">Energift</span>
+        <h1>Painel simples de consumo e recompensas</h1>
+        <p>
+          Interface em HTML, CSS e JavaScript para registrar consumo, calcular WattCoins,
+          consultar histórico e visualizar ranking.
+        </p>
+      </div>
+      <div class="api-config card compact-card">
+        <h2>Configuração</h2>
+        <label for="apiBaseUrl">Base da API</label>
+        <input id="apiBaseUrl" type="text" placeholder="Ex.: https://localhost:5001" />
+        <small>
+          Se o front-end estiver hospedado no mesmo projeto ASP.NET, deixe em branco para usar a mesma origem.
+        </small>
+        <button id="saveConfigButton" class="secondary">Salvar configuração</button>
+      </div>
+    </header>
+
+    <main class="dashboard">
+      <section class="card">
+        <div class="section-header">
+          <h2>Consultar histórico de consumo</h2>
+          <button id="loadConsumptionsButton">Buscar histórico</button>
+        </div>
+        <form id="filterForm" class="grid-form">
+          <label>
+            Usuário ID
+            <input name="usuarioId" type="number" min="1" value="1" required />
+          </label>
+          <label>
+            Imóvel ID
+            <input name="imovelId" type="number" min="1" placeholder="Opcional" />
+          </label>
+          <label>
+            De
+            <input name="from" type="date" />
+          </label>
+          <label>
+            Até
+            <input name="to" type="date" />
+          </label>
+          <label>
+            Página
+            <input name="page" type="number" min="1" value="1" />
+          </label>
+          <label>
+            Itens por página
+            <input name="pageSize" type="number" min="1" value="10" />
+          </label>
+        </form>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Referência</th>
+                <th>Usuário</th>
+                <th>Imóvel</th>
+                <th>kWh</th>
+                <th>Valor</th>
+                <th>WattCoins</th>
+              </tr>
+            </thead>
+            <tbody id="consumptionTableBody">
+              <tr><td colspan="6" class="empty-state">Nenhum dado carregado.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="cards-grid">
+        <article class="card">
+          <div class="section-header">
+            <h2>Novo consumo</h2>
+          </div>
+          <form id="consumptionForm" class="stack-form">
+            <label>Usuário ID<input name="usuarioId" type="number" min="1" required /></label>
+            <label>Imóvel ID<input name="imovelId" type="number" min="1" required /></label>
+            <label>Referência<input name="referencia" type="date" required /></label>
+            <label>Consumo (kWh)<input name="kwh" type="number" min="0" step="0.01" required /></label>
+            <label>Valor (R$)<input name="valor" type="number" min="0" step="0.01" required /></label>
+            <button type="submit">Cadastrar consumo</button>
+          </form>
+        </article>
+
+        <article class="card">
+          <div class="section-header">
+            <h2>Calcular WattCoins</h2>
+          </div>
+          <form id="coinsForm" class="stack-form">
+            <label>Usuário ID<input name="usuarioId" type="number" min="1" required /></label>
+            <label>Imóvel ID<input name="imovelId" type="number" min="1" required /></label>
+            <label>Referência<input name="referencia" type="date" required /></label>
+            <label>Consumo (kWh)<input name="kwh" type="number" min="0" step="0.01" required /></label>
+            <label>Valor (R$)<input name="valor" type="number" min="0" step="0.01" required /></label>
+            <label>kWh anterior<input name="previousKwh" type="number" min="0" step="0.01" placeholder="Opcional" /></label>
+            <button type="submit">Calcular moedas</button>
+          </form>
+          <div id="coinsResult" class="highlight-box">Nenhum cálculo realizado.</div>
+        </article>
+
+        <article class="card">
+          <div class="section-header">
+            <h2>Criar meta</h2>
+          </div>
+          <form id="goalForm" class="stack-form">
+            <label>Usuário ID<input name="usuarioId" type="number" min="1" required /></label>
+            <label>Imóvel ID<input name="imovelId" type="number" min="1" required /></label>
+            <label>Redução alvo (%)<input name="targetPercentReduction" type="number" min="0" step="0.01" required /></label>
+            <label>Data inicial<input name="startDate" type="date" required /></label>
+            <label>Data final<input name="endDate" type="date" required /></label>
+            <button type="submit">Salvar meta</button>
+          </form>
+        </article>
+
+        <article class="card">
+          <div class="section-header">
+            <h2>Ranking</h2>
+            <button id="loadRankingButton" class="secondary">Atualizar ranking</button>
+          </div>
+          <form id="rankingForm" class="stack-form compact-form">
+            <label>
+              Período
+              <select name="period">
+                <option value="monthly">Mensal</option>
+                <option value="weekly">Semanal</option>
+                <option value="yearly">Anual</option>
+              </select>
+            </label>
+          </form>
+          <ol id="rankingList" class="ranking-list">
+            <li class="empty-state">Nenhum ranking carregado.</li>
+          </ol>
+        </article>
+      </section>
+
+      <section class="card">
+        <div class="section-header">
+          <h2>Retorno da API</h2>
+          <button id="clearLogButton" class="ghost">Limpar</button>
+        </div>
+        <pre id="apiLog" class="api-log">Aguardando interações...</pre>
+      </section>
+    </main>
+  </div>
+
+  <script src="js/app.js"></script>
+</body>
+</html>

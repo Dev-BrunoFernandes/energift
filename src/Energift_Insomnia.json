@@ -1,0 +1,115 @@
+{
+  "_type": "export",
+  "__export_format": 4,
+  "__export_date": "2025-12-02T00:00:00.000Z",
+  "__export_source": "chatgpt-insomnia-generator",
+  "resources": [
+    {
+      "_id": "fld_energift",
+      "_type": "workspace",
+      "name": "Energift API",
+      "scope": "collection"
+    },
+
+
+    {
+      "_id": "fld_consumo",
+      "_type": "request_group",
+      "parentId": "fld_energift",
+      "name": "Consumo"
+    },
+
+    {
+      "_id": "req_consumo_get",
+      "_type": "request",
+      "parentId": "fld_consumo",
+      "name": "GET - Listar Consumo",
+      "method": "GET",
+      "url": "https://localhost:32769/api/consumo",
+      "parameters": [
+        {
+          "name": "usuarioId",
+          "value": "1"
+        },
+        {
+          "name": "page",
+          "value": "1"
+        },
+        {
+          "name": "pageSize",
+          "value": "10"
+        }
+      ]
+    },
+
+    {
+      "_id": "req_consumo_post",
+      "_type": "request",
+      "parentId": "fld_consumo",
+      "name": "POST - Criar Consumo",
+      "method": "POST",
+      "url": "https://localhost:32769/api/consumo",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"usuarioId\": 1,\n  \"imovelId\": 1,\n  \"data\": \"2025-01-01T00:00:00\",\n  \"kwh\": 150\n}"
+      }
+    },
+
+    {
+      "_id": "req_consumo_calc",
+      "_type": "request",
+      "parentId": "fld_consumo",
+      "name": "POST - Calcular Coins",
+      "method": "POST",
+      "url": "https://localhost:32769/api/consumo/calculate-coins",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"usuarioId\": 1,\n  \"kwh\": 120\n}"
+      }
+    },
+
+
+    {
+      "_id": "fld_goal",
+      "_type": "request_group",
+      "parentId": "fld_energift",
+      "name": "Goals"
+    },
+
+    {
+      "_id": "req_goal_post",
+      "_type": "request",
+      "parentId": "fld_goal",
+      "name": "POST - Criar Goal",
+      "method": "POST",
+      "url": "https://localhost:32769/api/goal",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"usuarioId\": 1,\n  \"descricao\": \"Reduzir consumo\",\n  \"metaKwh\": 300\n}"
+      }
+    },
+
+
+    {
+      "_id": "fld_ranking",
+      "_type": "request_group",
+      "parentId": "fld_energift",
+      "name": "Ranking"
+    },
+
+    {
+      "_id": "req_ranking_get",
+      "_type": "request",
+      "parentId": "fld_ranking",
+      "name": "GET - Ranking",
+      "method": "GET",
+      "url": "https://localhost:32769/api/ranking",
+      "parameters": [
+        {
+          "name": "period",
+          "value": "monthly"
+        }
+      ]
+    }
+  ]
+}

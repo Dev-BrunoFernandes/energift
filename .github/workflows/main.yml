@@ -1,60 +1,48 @@
-name: CI/CD Energift
+name: CI/CD Cidades ESGInteligentes
 
 on:
   push:
-    branches:
-      - main
-      - develop
+    branches: [ main ]
   pull_request:
-    branches:
-      - main
-      - develop
+    branches: [ main ]
 
 env:
-  AZURE_WEBAPP_PACKAGE_PATH: './publish'
-  DOTNET_VERSION: '8.0.x'
+  AZURE_WEBAPP_PACKAGE_PATH: '.'
   DOCKER_IMAGE_NAME: 'energift-api'
 
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v4
 
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: ${{ env.DOTNET_VERSION }}
+        dotnet-version: '8.0.x'
 
     - name: Restore dependencies
-      run: dotnet restore Energift.Fiap.sln
+      run: dotnet restore
 
-    - name: Build application
-      run: dotnet build Energift.Fiap.sln --configuration Release --no-restore
+    - name: Build
+      run: dotnet build --configuration Release --no-restore
 
-    - name: Run tests
-      run: dotnet test Energift.Tests/Energift.Tests.csproj --configuration Release --no-build --logger "trx;LogFileName=test-results.trx" --results-directory ./testresults
+    - name: Run Tests
+      # O pipeline para aqui se os testes falharem
+      run: dotnet test --no-build --verbosity normal
 
-    - name: Upload test results
-      uses: actions/upload-artifact@v4
-      with:
-        name: test-results
-        path: ./testresults
-
-    - name: Publish application
-      run: dotnet publish src/Energift.Fiap.csproj --configuration Release -o ${{ env.AZURE_WEBAPP_PACKAGE_PATH }} --no-build
+    - name: Publish Application
+      run: dotnet publish src/Energift.Fiap.csproj -c Release -o ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/myapp
 
     - name: Upload build artifact
       uses: actions/upload-artifact@v4
       with:
         name: energift-app
-        path: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+        path: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/myapp
 
-    build-and-push-docker:
+  build-and-push-docker:
     needs: build-and-test
     runs-on: ubuntu-latest
-    # Permissões para o GITHUB_TOKEN para push no GHCR
     permissions:
       contents: read
       packages: write
@@ -65,7 +53,7 @@ jobs:
       uses: actions/download-artifact@v4
       with:
         name: energift-app
-        path: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+        path: myapp
 
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
@@ -84,19 +72,17 @@ jobs:
         context: .
         file: ./Dockerfile
         push: true
-        # Adicionado | lower aqui
+        # Força o nome do repositório para minúsculas para evitar erro no Docker
         tags: ghcr.io/${{ github.repository | lower }}/${{ env.DOCKER_IMAGE_NAME }}:${{ github.sha }}
         build-args: |
           BUILD_VERSION=${{ github.sha }}
 
-    - name: Save image tag for later steps
-      # Adicionado | lower aqui e o comando para salvar no arquivo .txt
+    - name: Save image tag for deploy
       run: |
         IMAGE_TAG=ghcr.io/${{ github.repository | lower }}/${{ env.DOCKER_IMAGE_NAME }}:${{ github.sha }}
-        echo "DOCKER_IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
         echo "$IMAGE_TAG" > docker-image-tag.txt
 
-    - name: Upload Docker image tag as artifact
+    - name: Upload Docker image tag
       uses: actions/upload-artifact@v4
       with:
         name: docker-image-tag
@@ -115,8 +101,9 @@ jobs:
 
     - name: Read Docker image tag
       id: get_image_tag
-      # Ajustado para ler o arquivo corretamente
-      run: echo "DOCKER_IMAGE_TAG=$(cat docker-image-tag.txt)" >> $GITHUB_ENV
+      run: |
+        TAG=$(cat docker-image-tag.txt)
+        echo "DOCKER_IMAGE_TAG=$TAG" >> $GITHUB_ENV
 
     - name: Azure Login
       uses: azure/login@v1
@@ -141,8 +128,9 @@ jobs:
         name: docker-image-tag
 
     - name: Read Docker image tag
-      id: get_image_tag
-      run: echo "DOCKER_IMAGE_TAG=$(cat docker-image-tag/docker-image-tag.txt)" >> $GITHUB_ENV
+      run: |
+        TAG=$(cat docker-image-tag.txt)
+        echo "DOCKER_IMAGE_TAG=$TAG" >> $GITHUB_ENV
 
     - name: Azure Login
       uses: azure/login@v1

@@ -28,7 +28,8 @@ jobs:
       run: dotnet build --configuration Release --no-restore
 
     - name: Run Tests
-      run: dotnet test --no-build --verbosity normal
+      # Ajustado para Release para encontrar os arquivos compilados corretamente
+      run: dotnet test --configuration Release --no-build --verbosity normal
 
     - name: Publish Application
       run: dotnet publish src/Energift.Fiap.csproj -c Release -o ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/myapp
@@ -65,7 +66,7 @@ jobs:
         password: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Prepare Docker Image Tag
-      # Esta etapa converte o nome do repositório para minúsculas via shell
+      # Converte o nome do repositório para minúsculas via shell para evitar erro no Docker
       run: |
         REPO_LOWER=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
         IMAGE_TAG="ghcr.io/${REPO_LOWER}/${{ env.DOCKER_IMAGE_NAME }}:${{ github.sha }}"

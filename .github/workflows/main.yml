@@ -28,7 +28,6 @@ jobs:
       run: dotnet build --configuration Release --no-restore
 
     - name: Run Tests
-      # O pipeline para aqui se os testes falharem
       run: dotnet test --no-build --verbosity normal
 
     - name: Publish Application
@@ -65,22 +64,23 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
 
+    - name: Prepare Docker Image Tag
+      # Esta etapa converte o nome do repositório para minúsculas via shell
+      run: |
+        REPO_LOWER=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+        IMAGE_TAG="ghcr.io/${REPO_LOWER}/${{ env.DOCKER_IMAGE_NAME }}:${{ github.sha }}"
+        echo "DOCKER_IMAGE_TAG=${IMAGE_TAG}" >> $GITHUB_ENV
+        echo "${IMAGE_TAG}" > docker-image-tag.txt
+
     - name: Build and push Docker image
-      id: docker_build
       uses: docker/build-push-action@v5
       with:
         context: .
         file: ./Dockerfile
         push: true
-        # Força o nome do repositório para minúsculas para evitar erro no Docker
-        tags: ghcr.io/${{ github.repository | lower }}/${{ env.DOCKER_IMAGE_NAME }}:${{ github.sha }}
+        tags: ${{ env.DOCKER_IMAGE_TAG }}
         build-args: |
           BUILD_VERSION=${{ github.sha }}
-
-    - name: Save image tag for deploy
-      run: |
-        IMAGE_TAG=ghcr.io/${{ github.repository | lower }}/${{ env.DOCKER_IMAGE_NAME }}:${{ github.sha }}
-        echo "$IMAGE_TAG" > docker-image-tag.txt
 
     - name: Upload Docker image tag
       uses: actions/upload-artifact@v4
@@ -100,7 +100,6 @@ jobs:
         name: docker-image-tag
 
     - name: Read Docker image tag
-      id: get_image_tag
       run: |
         TAG=$(cat docker-image-tag.txt)
         echo "DOCKER_IMAGE_TAG=$TAG" >> $GITHUB_ENV

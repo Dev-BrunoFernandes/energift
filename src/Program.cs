@@ -13,9 +13,6 @@ builder.Services.AddSwaggerGen();
 // Register application dependencies
 builder.Services.AddEnergiftDependencies(builder.Configuration);
 
-builder.Services.AddDbContext<EnergyDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

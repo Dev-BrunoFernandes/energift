@@ -25,7 +25,11 @@ namespace Energift.Fiap.Api.Filters
                 _logger.LogError(ex, "Unhandled exception");
                 httpContext.Response.ContentType = "application/json";
                 httpContext.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
-                var result = JsonSerializer.Serialize(new { error = ex.Message });
+                var result = JsonSerializer.Serialize(new
+                {
+                    error = ex.Message,
+                    detail = ex.InnerException?.Message
+                });
                 await httpContext.Response.WriteAsync(result);
             }
         }

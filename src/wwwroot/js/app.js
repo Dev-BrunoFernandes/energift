@@ -1,282 +1,215 @@
-const storageKey = 'energift_api_base_url';
-
-const elements = {
-  apiBaseUrl: document.getElementById('apiBaseUrl'),
-  saveConfigButton: document.getElementById('saveConfigButton'),
-  loadConsumptionsButton: document.getElementById('loadConsumptionsButton'),
-  loadRankingButton: document.getElementById('loadRankingButton'),
-  clearLogButton: document.getElementById('clearLogButton'),
-  filterForm: document.getElementById('filterForm'),
-  consumptionForm: document.getElementById('consumptionForm'),
-  coinsForm: document.getElementById('coinsForm'),
-  goalForm: document.getElementById('goalForm'),
-  rankingForm: document.getElementById('rankingForm'),
-  consumptionTableBody: document.getElementById('consumptionTableBody'),
-  rankingList: document.getElementById('rankingList'),
-  apiLog: document.getElementById('apiLog'),
-  coinsResult: document.getElementById('coinsResult')
+// Gerenciamento de Configuração e Estado
+const state = {
+    apiBaseUrl: localStorage.getItem('apiBaseUrl') || '',
+    userTotalCoins: 0
 };
 
-function getBaseUrl() {
-  return (elements.apiBaseUrl.value || '').trim().replace(/\/$/, '');
+// Elementos do DOM
+const elements = {
+    apiBaseUrlInput: document.getElementById('apiBaseUrl'),
+    saveConfigButton: document.getElementById('saveConfigButton'),
+    configToggle: document.getElementById('configToggle'),
+    configPanel: document.getElementById('configPanel'),
+    consumptionForm: document.getElementById('consumptionForm'),
+    coinsForm: document.getElementById('coinsForm'),
+    loadConsumptionsButton: document.getElementById('loadConsumptionsButton'),
+    loadRankingButton: document.getElementById('loadRankingButton'),
+    consumptionTableBody: document.getElementById('consumptionTableBody'),
+    rankingList: document.getElementById('rankingList'),
+    coinsResult: document.getElementById('coinsResult'),
+    apiLog: document.getElementById('apiLog'),
+    clearLogButton: document.getElementById('clearLogButton'),
+    userTotalCoins: document.getElementById('userTotalCoins'),
+    toast: document.getElementById('toast'),
+    toastMessage: document.getElementById('toastMessage'),
+    toastIcon: document.getElementById('toastIcon')
+};
+
+// Inicialização
+document.addEventListener('DOMContentLoaded', () => {
+    elements.apiBaseUrlInput.value = state.apiBaseUrl;
+    setupEventListeners();
+    log('Sistema inicializado com sucesso.');
+});
+
+function setupEventListeners() {
+    // Configurações
+    elements.configToggle.addEventListener('click', () => elements.configPanel.classList.toggle('hidden'));
+    elements.saveConfigButton.addEventListener('click', saveConfig);
+    elements.clearLogButton.addEventListener('click', () => elements.apiLog.innerHTML = '> Logs limpos.');
+
+    // Formulários
+    elements.consumptionForm.addEventListener('submit', handleConsumptionSubmit);
+    elements.coinsForm.addEventListener('submit', handleCoinsCalculate);
+
+    // Listagens
+    elements.loadConsumptionsButton.addEventListener('click', loadConsumptions);
+    elements.loadRankingButton.addEventListener('click', loadRanking);
 }
 
-function buildUrl(path, queryParams = {}) {
-  const base = getBaseUrl();
-  const url = new URL(`${base}${path}`, window.location.origin);
+// Funções de API
+async function apiFetch(endpoint, options = {}) {
+    const url = `${state.apiBaseUrl}${endpoint}`;
+    const defaultOptions = {
+        headers: { 'Content-Type': 'application/json' },
+        ...options
+    };
 
-  Object.entries(queryParams).forEach(([key, value]) => {
-    if (value !== '' && value !== null && value !== undefined) {
-      url.searchParams.append(key, value);
+    try {
+        const response = await fetch(url, defaultOptions);
+        const data = await response.json();
+        
+        if (!response.ok) {
+            const msg = data.error || data.message || `Erro HTTP: ${response.status}`;
+            const detail = data.detail ? ` | Detalhe: ${data.detail}` : '';
+            throw new Error(msg + detail);
+        }
+        
+        log(`Sucesso: ${options.method || 'GET'} ${endpoint}`);
+        return data;
+    } catch (error) {
+        log(`Erro: ${error.message}`, 'error');
+        showToast(error.message, 'error');
+        throw error;
     }
-  });
-
-  return url.toString();
 }
 
-function saveBaseUrl() {
-  localStorage.setItem(storageKey, elements.apiBaseUrl.value.trim());
-  writeLog('Configuração salva', { baseUrl: elements.apiBaseUrl.value.trim() || 'mesma origem' }, true);
+// Handlers
+async function handleConsumptionSubmit(e) {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const payload = Object.fromEntries(formData.entries());
+    
+    // Converter tipos
+    payload.usuarioId = parseInt(payload.usuarioId);
+    payload.imovelId = parseInt(payload.imovelId);
+    payload.kwh = parseFloat(payload.kwh);
+    payload.valor = parseFloat(payload.valor);
+
+    try {
+        await apiFetch('/api/consumo', {
+            method: 'POST',
+            body: JSON.stringify(payload)
+        });
+        showToast('Consumo registrado com sucesso!', 'success');
+        e.target.reset();
+        loadConsumptions();
+        loadRanking();
+    } catch (err) {}
 }
 
-function loadBaseUrl() {
-  const saved = localStorage.getItem(storageKey);
-  if (saved) {
-    elements.apiBaseUrl.value = saved;
-  }
-}
+async function handleCoinsCalculate(e) {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const payload = Object.fromEntries(formData.entries());
+    
+    const params = new URLSearchParams({
+        kwh: payload.kwh,
+        valor: 0, // Valor não afeta cálculo de moedas nesta versão
+        previousKwh: payload.previousKwh || 0
+    });
 
-function formToJson(form) {
-  const data = Object.fromEntries(new FormData(form).entries());
-
-  Object.keys(data).forEach((key) => {
-    if (data[key] === '') {
-      data[key] = null;
-      return;
-    }
-
-    const input = form.querySelector(`[name="${key}"]`);
-    if (!input) return;
-
-    if (input.type === 'number') {
-      data[key] = Number(data[key]);
-    }
-  });
-
-  return data;
-}
-
-async function request(path, { method = 'GET', body = null, query = null } = {}) {
-  const url = buildUrl(path, query || {});
-
-  const config = {
-    method,
-    headers: {
-      'Accept': 'application/json'
-    }
-  };
-
-  if (body) {
-    config.headers['Content-Type'] = 'application/json';
-    config.body = JSON.stringify(body);
-  }
-
-  const response = await fetch(url, config);
-  const rawText = await response.text();
-  let payload = rawText;
-
-  try {
-    payload = rawText ? JSON.parse(rawText) : null;
-  } catch {
-    payload = rawText;
-  }
-
-  if (!response.ok) {
-    throw new Error(typeof payload === 'string' ? payload : JSON.stringify(payload, null, 2));
-  }
-
-  writeLog(`${method} ${url}`, payload, true);
-  return payload;
-}
-
-function writeLog(title, payload, success = true) {
-  const stamp = new Date().toLocaleString('pt-BR');
-  const serialized = typeof payload === 'string' ? payload : JSON.stringify(payload, null, 2);
-  elements.apiLog.textContent = `[${stamp}] ${title}\n\n${serialized}`;
-  elements.apiLog.className = success ? 'api-log status-success' : 'api-log status-error';
-}
-
-function normalizeArrayPayload(payload) {
-  if (Array.isArray(payload)) return payload;
-  if (payload && Array.isArray(payload.items)) return payload.items;
-  if (payload && Array.isArray(payload.data)) return payload.data;
-  if (payload && Array.isArray(payload.results)) return payload.results;
-  return [];
-}
-
-function readAny(obj, keys, fallback = '-') {
-  for (const key of keys) {
-    if (obj && obj[key] !== undefined && obj[key] !== null) return obj[key];
-  }
-  return fallback;
-}
-
-function renderConsumptions(payload) {
-  const rows = normalizeArrayPayload(payload);
-
-  if (!rows.length) {
-    elements.consumptionTableBody.innerHTML = '<tr><td colspan="6" class="empty-state">Nenhum consumo encontrado.</td></tr>';
-    return;
-  }
-
-  elements.consumptionTableBody.innerHTML = rows.map((item) => {
-    const referencia = readAny(item, ['referencia', 'Referencia']);
-    const usuarioId = readAny(item, ['usuarioId', 'UsuarioId']);
-    const imovelId = readAny(item, ['imovelId', 'ImovelId']);
-    const kwh = readAny(item, ['kwh', 'Kwh']);
-    const valor = readAny(item, ['valor', 'Valor']);
-    const wattCoins = readAny(item, ['wattCoins', 'WattCoins', 'coins', 'Coins']);
-
-    return `
-      <tr>
-        <td>${formatDate(referencia)}</td>
-        <td>${usuarioId}</td>
-        <td>${imovelId}</td>
-        <td>${formatNumber(kwh)}</td>
-        <td>${formatCurrency(valor)}</td>
-        <td>${formatNumber(wattCoins)}</td>
-      </tr>
-    `;
-  }).join('');
-}
-
-function renderRanking(payload) {
-  const rows = normalizeArrayPayload(payload);
-
-  if (!rows.length) {
-    elements.rankingList.innerHTML = '<li class="empty-state">Nenhum ranking encontrado.</li>';
-    return;
-  }
-
-  elements.rankingList.innerHTML = rows.map((item, index) => {
-    const user = readAny(item, ['usuarioNome', 'UsuarioNome', 'nome', 'Nome', 'usuarioId', 'UsuarioId'], `Usuário ${index + 1}`);
-    const score = readAny(item, ['wattCoins', 'WattCoins', 'score', 'Score', 'pontuacao', 'Pontuacao']);
-    const extra = readAny(item, ['economiaPercentual', 'EconomiaPercentual', 'percentReduction', 'PercentReduction'], null);
-
-    return `
-      <li class="ranking-item">
-        <strong>${index + 1}º lugar:</strong> ${user}
-        <div>Pontuação: ${formatNumber(score)}</div>
-        ${extra !== null && extra !== '-' ? `<div>Economia: ${formatNumber(extra)}%</div>` : ''}
-      </li>
-    `;
-  }).join('');
-}
-
-function formatDate(value) {
-  if (!value || value === '-') return '-';
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return value;
-  return date.toLocaleDateString('pt-BR');
-}
-
-function formatCurrency(value) {
-  if (value === '-' || value === null || value === undefined || Number.isNaN(Number(value))) return '-';
-  return Number(value).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-}
-
-function formatNumber(value) {
-  if (value === '-' || value === null || value === undefined || Number.isNaN(Number(value))) return '-';
-  return Number(value).toLocaleString('pt-BR', { maximumFractionDigits: 2 });
+    try {
+        const result = await apiFetch(`/api/watcoin/calculate?${params}`);
+        elements.coinsResult.innerText = `${result.wattCoins.toFixed(2)} WC`;
+        showToast('Cálculo realizado!', 'info');
+    } catch (err) {}
 }
 
 async function loadConsumptions() {
-  try {
-    const filters = formToJson(elements.filterForm);
-    const payload = await request('/api/Consumo', { query: filters });
-    renderConsumptions(payload);
-  } catch (error) {
-    writeLog('Erro ao buscar histórico de consumo', error.message, false);
-    elements.consumptionTableBody.innerHTML = `<tr><td colspan="6" class="empty-state">${error.message}</td></tr>`;
-  }
-}
-
-async function createConsumption(event) {
-  event.preventDefault();
-
-  try {
-    const body = formToJson(elements.consumptionForm);
-    const payload = await request('/api/Consumo', { method: 'POST', body });
-    writeLog('Consumo cadastrado com sucesso', payload, true);
-    elements.consumptionForm.reset();
-    await loadConsumptions();
-  } catch (error) {
-    writeLog('Erro ao cadastrar consumo', error.message, false);
-  }
-}
-
-async function calculateCoins(event) {
-  event.preventDefault();
-
-  try {
-    const body = formToJson(elements.coinsForm);
-    const payload = await request('/api/Consumo/calculate-coins', { method: 'POST', body });
-    const awarded = readAny(payload, ['awarded', 'Awarded'], 0);
-    elements.coinsResult.textContent = `WattCoins geradas: ${formatNumber(awarded)}`;
-  } catch (error) {
-    elements.coinsResult.textContent = `Falha ao calcular: ${error.message}`;
-    elements.coinsResult.className = 'highlight-box status-error';
-    writeLog('Erro ao calcular WattCoins', error.message, false);
-    return;
-  }
-
-  elements.coinsResult.className = 'highlight-box';
-}
-
-async function createGoal(event) {
-  event.preventDefault();
-
-  try {
-    const body = formToJson(elements.goalForm);
-    const payload = await request('/api/Goal', { method: 'POST', body });
-    writeLog('Meta cadastrada com sucesso', payload, true);
-    elements.goalForm.reset();
-  } catch (error) {
-    writeLog('Erro ao cadastrar meta', error.message, false);
-  }
+    try {
+        const data = await apiFetch('/api/consumo?usuarioId=1&pageSize=10');
+        renderConsumptions(data.items || []);
+    } catch (err) {}
 }
 
 async function loadRanking() {
-  try {
-    const { period } = formToJson(elements.rankingForm);
-    const payload = await request('/api/Ranking', { query: { period } });
-    renderRanking(payload);
-  } catch (error) {
-    writeLog('Erro ao buscar ranking', error.message, false);
-    elements.rankingList.innerHTML = `<li class="empty-state">${error.message}</li>`;
-  }
+    try {
+        const data = await apiFetch('/api/ranking?period=monthly');
+        renderRanking(data || []);
+    } catch (err) {}
 }
 
-function clearLog() {
-  elements.apiLog.textContent = 'Aguardando interações...';
-  elements.apiLog.className = 'api-log';
+// Renderização
+function renderConsumptions(items) {
+    if (items.length === 0) {
+        elements.consumptionTableBody.innerHTML = '<tr><td colspan="5" class="px-6 py-10 text-center text-gray-500 italic">Nenhum dado encontrado.</td></tr>';
+        return;
+    }
+
+    elements.consumptionTableBody.innerHTML = items.map(item => `
+        <tr class="hover:bg-gray-50 transition-colors">
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">${new Date(item.referencia).toLocaleDateString()}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Imóvel #${item.imovelId}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${item.kwh.toFixed(2)} kWh</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">R$ ${item.valor.toFixed(2)}</td>
+            <td class="px-6 py-4 whitespace-nowrap">
+                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-emerald-100 text-emerald-800">
+                    +${(item.wattCoins ?? 0).toFixed(2)} WC
+                </span>
+            </td>
+        </tr>
+    `).join('');
 }
 
-function wireEvents() {
-  elements.saveConfigButton.addEventListener('click', saveBaseUrl);
-  elements.loadConsumptionsButton.addEventListener('click', loadConsumptions);
-  elements.loadRankingButton.addEventListener('click', loadRanking);
-  elements.clearLogButton.addEventListener('click', clearLog);
-  elements.consumptionForm.addEventListener('submit', createConsumption);
-  elements.coinsForm.addEventListener('submit', calculateCoins);
-  elements.goalForm.addEventListener('submit', createGoal);
-  elements.rankingForm.addEventListener('change', loadRanking);
+function renderRanking(items) {
+    if (items.length === 0) {
+        elements.rankingList.innerHTML = '<li class="py-3 text-center text-gray-500 text-sm italic">Nenhum dado no ranking.</li>';
+        return;
+    }
+
+    elements.rankingList.innerHTML = items.map((item, index) => `
+        <li class="py-3 flex items-center justify-between">
+            <div class="flex items-center">
+                <span class="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full ${index < 3 ? 'bg-amber-100 text-amber-700 font-bold' : 'bg-gray-100 text-gray-500'} text-sm mr-3">
+                    ${index + 1}
+                </span>
+                <span class="text-sm font-medium text-gray-900">Usuário #${item.usuarioId}</span>
+            </div>
+            <span class="text-sm font-bold text-emerald-600">${(item.totalSavedKwh ?? 0).toFixed(2)} kWh</span>
+        </li>
+    `).join('');
 }
 
-function bootstrap() {
-  loadBaseUrl();
-  wireEvents();
-  loadRanking();
+// Helpers
+function saveConfig() {
+    state.apiBaseUrl = elements.apiBaseUrlInput.value.trim();
+    localStorage.setItem('apiBaseUrl', state.apiBaseUrl);
+    showToast('Configuração salva!', 'success');
+    elements.configPanel.classList.add('hidden');
+    log(`URL da API alterada para: ${state.apiBaseUrl || '(origem local)'}`);
 }
 
-bootstrap();
+function log(msg, type = 'info') {
+    const timestamp = new Date().toLocaleTimeString();
+    const color = type === 'error' ? 'text-red-400' : 'text-emerald-400';
+    elements.apiLog.innerHTML += `<div class="${color} mb-1">
+        <span class="opacity-50">[${timestamp}]</span> ${msg}
+    </div>`;
+    elements.apiLog.scrollTop = elements.apiLog.scrollHeight;
+}
+
+function showToast(message, type = 'info') {
+    const colors = {
+        success: 'bg-emerald-600',
+        error: 'bg-red-600',
+        info: 'bg-blue-600'
+    };
+    
+    elements.toast.className = `fixed bottom-5 right-5 flex items-center space-x-3 px-6 py-3 rounded-lg shadow-2xl z-50 transition-all duration-300 ${colors[type]}`;
+    elements.toastMessage.innerText = message;
+    
+    // Icon
+    const icons = {
+        success: '<i class="fas fa-check-circle"></i>',
+        error: '<i class="fas fa-exclamation-triangle"></i>',
+        info: '<i class="fas fa-info-circle"></i>'
+    };
+    elements.toastIcon.innerHTML = icons[type];
+
+    // Show
+    elements.toast.classList.remove('translate-y-20', 'opacity-0');
+    setTimeout(() => {
+        elements.toast.classList.add('translate-y-20', 'opacity-0');
+    }, 3000);
+}

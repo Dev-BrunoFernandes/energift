@@ -3,6 +3,8 @@ using Energift.Fiap.Api.Filters;
 using Energift.Fiap.Infrastructure.Context;
 using Microsoft.EntityFrameworkCore;
 
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -12,9 +14,6 @@ builder.Services.AddSwaggerGen();
 
 // Register application dependencies
 builder.Services.AddEnergiftDependencies(builder.Configuration);
-
-builder.Services.AddDbContext<EnergyDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 var app = builder.Build();
 
@@ -43,9 +42,10 @@ using (var scope = app.Services.CreateScope())
     try
     {
         var context = services.GetRequiredService<EnergyDbContext>();
-        // Aguarda um pouco e tenta aplicar as migrações (cria tabelas)
-        context.Database.Migrate();
-        Console.WriteLine("Banco de dados verificado e tabelas criadas com sucesso.");
+        // EnsureCreated cria o banco e as tabelas se elas não existirem, 
+        // ideal para quando não temos arquivos de Migration físicos.
+        context.Database.EnsureCreated();
+        Console.WriteLine("Banco de dados verificado e tabelas garantidas com sucesso.");
     }
     catch (Exception ex)
     {

@@ -5,6 +5,7 @@ WORKDIR /app
 COPY *.sln ./
 COPY src/*.csproj ./src/
 COPY Energift.Tests/*.csproj ./Energift.Tests/
+COPY Energift.BDD.Tests/*.csproj ./Energift.BDD.Tests/
 
 # Restaura as dependências
 RUN dotnet restore

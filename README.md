@@ -1,6 +1,6 @@
-# Projeto - Cidades ESGInteligentes
+# Projeto - Energift
 
-Este projeto demonstra a aplicação de práticas de DevOps no projeto Cidades ESGInteligentes, desenvolvido em C# com .NET 8.0. O objetivo é automatizar o ciclo de vida da aplicação, desde a integração contínua até o deploy em ambientes de staging e produção, utilizando containerização e orquestração.
+Este projeto demonstra a aplicação de práticas de DevOps no projeto Energift, desenvolvido em C# com .NET 8.0. O objetivo é automatizar o ciclo de vida da aplicação, desde a integração contínua até o deploy em ambientes de staging e produção, utilizando containerização e orquestração.
 
 ## Estrutura do Projeto
 
@@ -80,7 +80,7 @@ O arquivo de configuração do pipeline pode ser encontrado em `.github/workflow
 
 #### Dockerfile
 
-Um `Dockerfile` funcional foi criado para a aplicação Cidades ESGInteligentes, otimizado para o processo de CI/CD. Ele inclui as seguintes fases:
+Um `Dockerfile` funcional foi criado para a aplicação Energift, otimizado para o processo de CI/CD. Ele inclui as seguintes fases:
 
 *   **build-env:** Prepara o ambiente para compilação e restauração de dependências.
 *   **test-env:** Executa os testes unitários da aplicação.
@@ -91,10 +91,10 @@ O `Dockerfile` está localizado na raiz do projeto (`Dockerfile`).
 
 #### Docker Compose
 
-Um arquivo `docker-compose.yml` foi configurado para orquestrar os serviços da aplicação, incluindo a API Cidades ESGInteligentes e um banco de dados PostgreSQL.
+Um arquivo `docker-compose.yml` foi configurado para orquestrar os serviços da aplicação, incluindo a API Energift e um banco de dados PostgreSQL.
 
 *   **Serviços:**
-    *   `api`: Contém a configuração para a aplicação Cidades ESGInteligentes, utilizando o `Dockerfile` para construir a imagem. Expõe a porta `8080` e configura a string de conexão com o banco de dados via variáveis de ambiente.
+    *   `api`: Contém a configuração para a aplicação Energift, utilizando o `Dockerfile` para construir a imagem. Expõe a porta `8080` e configura a string de conexão com o banco de dados via variáveis de ambiente.
     *   `postgres-db`: Utiliza a imagem oficial do PostgreSQL (versão 17), configura as credenciais do banco de dados e expõe a porta `5432`. Utiliza um volume (`pgdata`) para persistência dos dados.
 
 *   **Volumes:**
@@ -130,6 +130,3 @@ O arquivo `docker-compose.yml` está localizado na raiz do projeto (`docker-comp
 | Deploy realizado nos ambientes staging e produção | ✅    |
 
 ---
-
-**Autor:** Manus AI
-**Data:** 05 de Maio de 2026

@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Energift.Fiap", "src\Energi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Energift.Tests", "Energift.Tests\Energift.Tests.csproj", "{189463C5-CC00-4096-B941-38FE70B8B689}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Energift.BDD.Tests", "Energift.BDD.Tests\Energift.BDD.Tests.csproj", "{3D7F9A12-B456-4C89-D012-E34F567890AB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,5 +26,9 @@ Global
 		{189463C5-CC00-4096-B941-38FE70B8B689}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{189463C5-CC00-4096-B941-38FE70B8B689}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{189463C5-CC00-4096-B941-38FE70B8B689}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3D7F9A12-B456-4C89-D012-E34F567890AB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3D7F9A12-B456-4C89-D012-E34F567890AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3D7F9A12-B456-4C89-D012-E34F567890AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3D7F9A12-B456-4C89-D012-E34F567890AB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

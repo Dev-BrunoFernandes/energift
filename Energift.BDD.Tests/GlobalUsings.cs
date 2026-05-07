@@ -1,0 +1,12 @@
+global using System.Net;
+global using System.Net.Http.Json;
+global using System.Text.Json;
+global using Moq;
+global using Reqnroll;
+global using Xunit;
+global using Energift.Fiap.Application.Dtos.CalculateCoins;
+global using Energift.Fiap.Application.Dtos.Consumo;
+global using Energift.Fiap.Application.Dtos.Goal;
+global using Energift.Fiap.Application.Dtos.Ranking;
+global using Energift.Fiap.Application.Services.Interfaces;
+global using Energift.BDD.Tests.Support;

@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "GoalResponse",
+  "type": "object",
+  "required": ["id", "usuarioId", "imovelId", "targetPercentReduction", "startDate", "endDate", "achieved"],
+  "properties": {
+    "id": { "type": "string" },
+    "usuarioId": { "type": "integer" },
+    "imovelId": { "type": "integer" },
+    "targetPercentReduction": { "type": "number" },
+    "startDate": { "type": "string" },
+    "endDate": { "type": "string" },
+    "achieved": { "type": "boolean" }
+  }
+}

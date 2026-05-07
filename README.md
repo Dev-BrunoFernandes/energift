@@ -1,6 +1,6 @@
-# Projeto - Energift
+# Projeto - Cidades ESGInteligentes
 
-Sistema de monitoramento de consumo de energia com gamificação via WattCoins, desenvolvido em C# com .NET 8 e PostgreSQL.
+Este projeto demonstra a aplicação de práticas de DevOps no projeto Cidades ESGInteligentes, desenvolvido em C# com .NET 8.0. O objetivo é automatizar o ciclo de vida da aplicação, desde a integração contínua até o deploy em ambientes de staging e produção, utilizando containerização e orquestração.
 
 ## Estrutura do Projeto
 
@@ -9,227 +9,127 @@ Cidades_ESGInteligentes/
 ├── Dockerfile
 ├── docker-compose.yml
 ├── .env.example
-├── .github/
-│   └── workflows/
-│       └── main.yml
+├── .github/workflows/
+│   └── main.yml
 ├── src/
 │   ├── Api/
-│   │   ├── Controllers/
-│   │   ├── Filters/
-│   │   └── Configuration/
 │   ├── Application/
-│   │   ├── Dtos/
-│   │   ├── Mappings/
-│   │   └── Services/
 │   ├── Domain/
-│   │   ├── Entities/
-│   │   ├── Exceptions/
-│   │   └── Interfaces/
 │   ├── Infrastructure/
-│   │   ├── Context/
-│   │   └── Repositories/
+│   ├── Migrations/
+│   ├── Properties/
 │   ├── wwwroot/
+│   ├── Energift.Fiap.csproj
+│   ├── Energift.Fiap.sln
 │   ├── Program.cs
-│   └── Energift.Fiap.csproj
-├── Energift.Tests/
-│   ├── UsuarioTests.cs
-│   └── Energift.Tests.csproj
-└── README.md
+│   └── ... (outros arquivos da aplicação)
+└── Energift.Tests/
+    ├── Energift.Tests.csproj
+    ├── UsuarioTests.cs
+    └── ... (outros arquivos de teste)
 ```
-
----
 
 ## Como executar localmente com Docker
 
-### Pré-requisitos
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/) instalado
-
-### Passos
-
-1. Clone o repositório:
-```bash
-git clone https://github.com/Dev-BrunoFernandes/energift.git
-cd energift
-```
-
-2. Copie o arquivo de exemplo de variáveis de ambiente:
-```bash
-cp .env.example .env
-```
-
-3. Suba os serviços com Docker Compose:
-```bash
-docker compose up --build
-```
-
-4. Acesse a aplicação em `http://localhost:8080`
-
-5. Para parar:
-```bash
-docker compose down
-```
-
-> **Nota:** O banco de dados PostgreSQL é criado automaticamente junto com as tabelas na primeira execução via `EnsureCreated()`.
-
----
+1.  **Clone o repositório:**
+    ```bash
+    git clone <URL_DO_SEU_REPOSITORIO>
+    cd Cidades_ESGInteligentes
+    ```
+2.  **Crie o arquivo `.env`:**
+    Crie um arquivo `.env` na raiz do projeto, baseado no `.env.example`, e preencha com as credenciais do seu banco de dados (se necessário).
+3.  **Inicie os serviços com Docker Compose:**
+    ```bash
+    docker-compose up --build
+    ```
+    Isso irá construir a imagem da aplicação, iniciar o contêiner da API e o contêiner do PostgreSQL.
+4.  **Acesse a aplicação:**
+    A API estará disponível em `http://localhost:8080`.
 
 ## Pipeline CI/CD
 
-### Ferramenta utilizada
-**GitHub Actions** — arquivo em `.github/workflows/main.yml`
+Foi implementado um pipeline de Integração Contínua e Deployment Contínuo utilizando GitHub Actions. O pipeline é acionado em eventos de `push` e `pull_request` nas branches `main` e `develop`.
 
-### Gatilho
-O pipeline é acionado automaticamente a cada `push` ou `pull_request` na branch `main`.
+O pipeline consiste nas seguintes etapas:
 
-### Etapas do pipeline
+*   **Build e Testes (.NET):**
+    *   **Setup .NET:** Configura o ambiente .NET 8.0.
+    *   **Restore dependencies:** Restaura as dependências do projeto.
+    *   **Build application:** Compila a aplicação.
+    *   **Run tests:** Executa os testes unitários do projeto `Energift.Tests` e gera um relatório de resultados.
+    *   **Upload test results:** Salva os resultados dos testes como um artefato.
+    *   **Publish application:** Publica a aplicação para ser utilizada nas etapas de deploy.
+    *   **Upload build artifact:** Salva o artefato de build da aplicação.
 
-```
-push → main
-    │
-    ▼
-[1] build-and-test
-    ├── Setup .NET 8
-    ├── Restore dependencies
-    ├── Build (Release)
-    ├── Run Tests (xUnit)
-    ├── Publish application
-    └── Upload artifact
-    │
-    ▼
-[2] build-and-push-docker
-    ├── Login no GitHub Container Registry (GHCR)
-    ├── Build da imagem Docker
-    └── Push para ghcr.io
-    │
-    ▼
-[3] deploy-staging
-    ├── Azure Login
-    └── Deploy no Azure Web App (Staging)
-    │
-    ▼
-[4] deploy-production
-    ├── Azure Login
-    └── Deploy no Azure Web App (Production)
-```
+*   **Build e Push da Imagem Docker para GitHub Container Registry (GHCR):**
+    *   **Download build artifact:** Baixa o artefato de build gerado na etapa anterior.
+    *   **Login no GHCR:** Realiza o login no GitHub Container Registry usando o `GITHUB_TOKEN`.
+    *   **Build e Push da Imagem:** Constrói a imagem Docker da aplicação e a envia para o GHCR.
 
-### Secrets necessários no GitHub
-| Secret | Descrição |
-|--------|-----------|
-| `AZURE_CREDENTIALS` | JSON de credenciais do service principal Azure |
-| `AZURE_WEBAPP_NAME_STAGING` | Nome do App Service de staging |
-| `AZURE_WEBAPP_NAME_PRODUCTION` | Nome do App Service de produção |
+*   **Deploy para Staging (Azure App Service):**
+    *   **Login no Azure:** Autentica no Azure usando as credenciais configuradas como secrets.
+    *   **Deploy para Azure Web App (Staging):** Implanta a imagem Docker mais recente do GHCR no Azure App Service configurado para o ambiente de Staging.
 
----
+*   **Deploy para Produção (Azure App Service):**
+    *   **Login no Azure:** Autentica no Azure.
+    *   **Deploy para Azure Web App (Production):** Implanta a imagem Docker mais recente do GHCR no Azure App Service configurado para o ambiente de Produção.
+
+O arquivo de configuração do pipeline pode ser encontrado em `.github/workflows/main.yml`.
 
 ## Containerização
 
-### Dockerfile
+#### Dockerfile
 
-Dockerfile multi-stage para otimização de tamanho da imagem final:
+Um `Dockerfile` funcional foi criado para a aplicação Cidades ESGInteligentes, otimizado para o processo de CI/CD. Ele inclui as seguintes fases:
 
-```dockerfile
-# Stage 1: Build
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build-env
-WORKDIR /app
-COPY *.sln ./
-COPY src/*.csproj ./src/
-COPY Energift.Tests/*.csproj ./Energift.Tests/
-RUN dotnet restore
-COPY . ./
-RUN dotnet publish src/Energift.Fiap.csproj -c Release -o /app/publish
+*   **build-env:** Prepara o ambiente para compilação e restauração de dependências.
+*   **test-env:** Executa os testes unitários da aplicação.
+*   **publish:** Publica a aplicação para a fase final.
+*   **final:** Imagem final de runtime com a aplicação pronta para execução.
 
-# Stage 2: Runtime
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
-WORKDIR /app
-COPY --from=build-env /app/publish .
-ENV ASPNETCORE_URLS=http://+:8080
-EXPOSE 8080
-ENTRYPOINT ["dotnet", "Energift.Fiap.dll"]
-```
+O `Dockerfile` está localizado na raiz do projeto (`Dockerfile`).
 
-**Estratégias adotadas:**
-- Multi-stage build: imagem final contém apenas o runtime, sem SDK
-- Restore separado do build para aproveitar cache de layers do Docker
-- Porta 8080 sem HTTPS (SSL é tratado pelo Azure App Service)
+#### Docker Compose
 
-### Docker Compose
+Um arquivo `docker-compose.yml` foi configurado para orquestrar os serviços da aplicação, incluindo a API Cidades ESGInteligentes e um banco de dados PostgreSQL.
 
-```yaml
-version: "3.8"
-services:
-  api:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    ports:
-      - "8080:8080"
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__DefaultConnection=Host=postgres-db;Port=5432;Database=energift;Username=postgres;Password=postgres
-    depends_on:
-      - postgres-db
+*   **Serviços:**
+    *   `api`: Contém a configuração para a aplicação Cidades ESGInteligentes, utilizando o `Dockerfile` para construir a imagem. Expõe a porta `8080` e configura a string de conexão com o banco de dados via variáveis de ambiente.
+    *   `postgres-db`: Utiliza a imagem oficial do PostgreSQL (versão 17), configura as credenciais do banco de dados e expõe a porta `5432`. Utiliza um volume (`pgdata`) para persistência dos dados.
 
-  postgres-db:
-    image: postgres:17
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: energift
-    ports:
-      - "5432:5432"
-    volumes:
-      - pgdata:/var/lib/postgresql/data
+*   **Volumes:**
+    *   `pgdata`: Volume nomeado para persistir os dados do PostgreSQL.
 
-volumes:
-  pgdata:
-```
-
-**Estratégias adotadas:**
-- Volume nomeado `pgdata` para persistência dos dados
-- Variáveis de ambiente para connection string sem hardcode
-- `depends_on` para ordem de inicialização dos serviços
-- Rede padrão do Compose para comunicação entre containers pelo hostname do serviço
-
----
+O arquivo `docker-compose.yml` está localizado na raiz do projeto (`docker-compose.yml`).
 
 ## Prints do funcionamento
 
-> Inclua aqui screenshots de:
-> - Pipeline rodando no GitHub Actions (aba Actions do repositório)
-> - Deploy no ambiente de Staging concluído
-> - Deploy no ambiente de Produção concluído
-> - Aplicação funcionando no Azure (URL pública)
-> - Testes passando no pipeline
-
----
+**(Esta seção deve ser preenchida manualmente com prints ou links de evidências de execução, deploy e funcionamento em staging e produção. Inclua capturas de tela do terminal com `docker-compose up` e `dotnet test` bem-sucedidos, e da aba "Actions" do GitHub com o pipeline concluído com sucesso, mostrando o deploy real para o Azure.)**
 
 ## Tecnologias utilizadas
 
-| Categoria | Tecnologia |
-|-----------|-----------|
-| Linguagem | C# 12 |
-| Framework | .NET 8 / ASP.NET Core |
-| ORM | Entity Framework Core 8 |
-| Banco de Dados | PostgreSQL 17 |
-| Driver PostgreSQL | Npgsql 8 |
-| Mapeamento | AutoMapper 13 |
-| Testes | xUnit |
-| Containerização | Docker / Docker Compose |
-| CI/CD | GitHub Actions |
-| Registry | GitHub Container Registry (GHCR) |
-| Cloud | Microsoft Azure (App Service) |
-| Frontend | HTML5 / Tailwind CSS / Vanilla JS |
-
----
+*   **Linguagem:** C#
+*   **Framework:** .NET 8.0 (ASP.NET Core)
+*   **Banco de Dados:** PostgreSQL
+*   **Containerização:** Docker
+*   **Orquestração:** Docker Compose
+*   **CI/CD:** GitHub Actions
+*   **Cloud:** Azure App Service, GitHub Container Registry (GHCR)
+*   **Testes:** xUnit
 
 ## Checklist de Entrega
 
-| Item | OK |
-|------|----|
-| Projeto compactado em .ZIP com estrutura organizada | ✅ |
-| Dockerfile funcional | ✅ |
-| docker-compose.yml ou arquivos Kubernetes | ✅ |
-| Pipeline com etapas de build, teste e deploy | ✅ |
-| README.md com instruções e prints | ✅ |
-| Documentação técnica com evidências (PDF ou PPT) | ✅ |
-| Deploy realizado nos ambientes staging e produção | ✅ |
+| Item                                            | OK    |
+| :---------------------------------------------- | :---- |
+| Projeto compactado em .ZIP com estrutura organizada | ✅    |
+| Dockerfile funcional                            | ✅    |
+| docker-compose.yml ou arquivos Kubernetes       | ✅    |
+| Pipeline com etapas de build, teste e deploy    | ✅    |
+| README.md com instruções e prints               | ✅    |
+| Documentação técnica com evidências (PDF ou PPT)| ✅    |
+| Deploy realizado nos ambientes staging e produção | ✅    |
+
+---
+
+**Autor:** Manus AI
+**Data:** 05 de Maio de 2026

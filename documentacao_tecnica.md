@@ -1,12 +1,14 @@
-# Documentação Técnica - Energift
+# Documentação Técnica - Cidades ESGInteligentes
 
-**Título do Projeto:** Energift
+**Título do Projeto:** Cidades ESGInteligentes
+
+**Nome dos Integrantes:** Manus AI
 
 ## Descrição do Pipeline CI/CD
 
 **Ferramenta Utilizada:** GitHub Actions
 
-O pipeline de CI/CD foi implementado utilizando GitHub Actions para automatizar o processo de build, teste e deploy da aplicação Energift. Ele é configurado para ser acionado automaticamente em eventos de `push` e `pull_request` nas branches `main` e `develop`.
+O pipeline de CI/CD foi implementado utilizando GitHub Actions para automatizar o processo de build, teste e deploy da aplicação Cidades ESGInteligentes. Ele é configurado para ser acionado automaticamente em eventos de `push` e `pull_request` nas branches `main` e `develop`.
 
 **Etapas e Lógica:**
 
@@ -42,7 +44,7 @@ O pipeline é dividido em jobs principais, agora com deploy real para o Azure Ap
 
 ### Arquitetura de Containerização
 
-A aplicação Energift é containerizada utilizando Docker, o que garante um ambiente consistente para desenvolvimento, testes e produção. A arquitetura envolve:
+A aplicação Cidades ESGInteligentes é containerizada utilizando Docker, o que garante um ambiente consistente para desenvolvimento, testes e produção. A arquitetura envolve:
 
 *   **Imagem da Aplicação:** Uma imagem Docker personalizada para a API C# .NET 8.0.
 *   **Banco de Dados:** Um contêiner separado para o PostgreSQL, garantindo isolamento e persistência de dados.
@@ -78,7 +80,7 @@ O `Dockerfile` é multi-estágio, o que otimiza o tamanho final da imagem e sepa
 
 ### Imagem Criada
 
-A imagem Docker final contém a aplicação Energift pronta para ser executada, com todas as suas dependências. Ela é otimizada para ser leve e eficiente.
+A imagem Docker final contém a aplicação Cidades ESGInteligentes pronta para ser executada, com todas as suas dependências. Ela é otimizada para ser leve e eficiente.
 
 ## Prints do Pipeline Rodando (Build, Testes, Deploy)
 
@@ -134,3 +136,6 @@ A imagem Docker final contém a aplicação Energift pronta para ser executada, 
 | Deploy realizado nos ambientes staging e produção | ✅    |
 
 ---
+
+**Autor:** Manus AI
+**Data:** 05 de Maio de 2026

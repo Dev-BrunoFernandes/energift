@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\bruno\\Downloads\\Cidades_ESGInteligentes_GHCR_Deploy\\src\\Energift.Fiap.csproj": {}
+    "C:\\Users\\bruno\\Downloads\\Cidades_ESGInteligentes_Final_Corrigido\\src\\Energift.Fiap.csproj": {}
   },
   "projects": {
-    "C:\\Users\\bruno\\Downloads\\Cidades_ESGInteligentes_GHCR_Deploy\\src\\Energift.Fiap.csproj": {
+    "C:\\Users\\bruno\\Downloads\\Cidades_ESGInteligentes_Final_Corrigido\\src\\Energift.Fiap.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\bruno\\Downloads\\Cidades_ESGInteligentes_GHCR_Deploy\\src\\Energift.Fiap.csproj",
+        "projectUniqueName": "C:\\Users\\bruno\\Downloads\\Cidades_ESGInteligentes_Final_Corrigido\\src\\Energift.Fiap.csproj",
         "projectName": "Energift.Fiap",
-        "projectPath": "C:\\Users\\bruno\\Downloads\\Cidades_ESGInteligentes_GHCR_Deploy\\src\\Energift.Fiap.csproj",
+        "projectPath": "C:\\Users\\bruno\\Downloads\\Cidades_ESGInteligentes_Final_Corrigido\\src\\Energift.Fiap.csproj",
         "packagesPath": "C:\\Users\\bruno\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\bruno\\Downloads\\Cidades_ESGInteligentes_GHCR_Deploy\\src\\obj\\",
+        "outputPath": "C:\\Users\\bruno\\Downloads\\Cidades_ESGInteligentes_Final_Corrigido\\src\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -71,10 +71,6 @@
               "target": "Package",
               "version": "[8.0.4, )"
             },
-            "Microsoft.EntityFrameworkCore.SqlServer": {
-              "target": "Package",
-              "version": "[8.0.0, )"
-            },
             "Microsoft.EntityFrameworkCore.Tools": {
               "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
               "suppressParent": "All",
@@ -84,6 +80,10 @@
             "Microsoft.VisualStudio.Azure.Containers.Tools.Targets": {
               "target": "Package",
               "version": "[1.22.1, )"
+            },
+            "Npgsql.EntityFrameworkCore.PostgreSQL": {
+              "target": "Package",
+              "version": "[8.0.4, )"
             },
             "Swashbuckle.AspNetCore": {
               "target": "Package",

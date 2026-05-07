@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Energift.Fiap")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+49fccfe51262eb34ce6e197287441ae7b43156d1")]
 [assembly: System.Reflection.AssemblyProductAttribute("Energift.Fiap")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Energift.Fiap")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

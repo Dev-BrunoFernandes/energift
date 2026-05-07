@@ -16,7 +16,7 @@ namespace Energift.Fiap.Api.Configuration
         {
             // DbContext (use SQL Server)
             services.AddDbContext<EnergyDbContext>(options =>
-                options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
+                options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
 
             // Repositories
             services.AddScoped<IConsumoRepository, ConsumoRepository>();

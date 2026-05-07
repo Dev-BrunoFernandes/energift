@@ -1,160 +1,201 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" class="h-full bg-gray-50">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Energift | Painel</title>
-  <link rel="stylesheet" href="css/styles.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Energift | Gestão ESG Inteligente</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .glass-card { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(10px); }
+    </style>
 </head>
-<body>
-  <div class="app-shell">
-    <header class="hero">
-      <div>
-        <span class="eyebrow">Energift</span>
-        <h1>Painel simples de consumo e recompensas</h1>
-        <p>
-          Interface em HTML, CSS e JavaScript para registrar consumo, calcular WattCoins,
-          consultar histórico e visualizar ranking.
-        </p>
-      </div>
-      <div class="api-config card compact-card">
-        <h2>Configuração</h2>
-        <label for="apiBaseUrl">Base da API</label>
-        <input id="apiBaseUrl" type="text" placeholder="Ex.: https://localhost:5001" />
-        <small>
-          Se o front-end estiver hospedado no mesmo projeto ASP.NET, deixe em branco para usar a mesma origem.
-        </small>
-        <button id="saveConfigButton" class="secondary">Salvar configuração</button>
-      </div>
-    </header>
+<body class="h-full">
+    <div class="min-h-full">
+        <!-- Navigation -->
+        <nav class="bg-emerald-700 shadow-lg">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex items-center justify-between h-16">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-leaf text-emerald-300 text-2xl mr-2"></i>
+                            <span class="text-white font-bold text-xl tracking-tight">Energift</span>
+                        </div>
+                        <div class="hidden md:block">
+                            <div class="ml-10 flex items-baseline space-x-4">
+                                <a href="#" class="bg-emerald-800 text-white px-3 py-2 rounded-md text-sm font-medium">Dashboard</a>
+                                <a href="#ranking" class="text-emerald-100 hover:bg-emerald-600 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Ranking</a>
+                                <a href="#historico" class="text-emerald-100 hover:bg-emerald-600 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Histórico</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="hidden md:block">
+                        <div class="ml-4 flex items-center md:ml-6">
+                            <button id="configToggle" class="bg-emerald-800 p-1 rounded-full text-emerald-200 hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-emerald-800 focus:ring-white">
+                                <i class="fas fa-cog"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
 
-    <main class="dashboard">
-      <section class="card">
-        <div class="section-header">
-          <h2>Consultar histórico de consumo</h2>
-          <button id="loadConsumptionsButton">Buscar histórico</button>
+        <!-- Config Panel (Hidden by default) -->
+        <div id="configPanel" class="hidden bg-white border-b border-gray-200 py-4 px-4 sm:px-6 lg:px-8 shadow-inner">
+            <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-end gap-4">
+                <div class="flex-grow">
+                    <label for="apiBaseUrl" class="block text-sm font-medium text-gray-700">URL Base da API</label>
+                    <input type="text" id="apiBaseUrl" placeholder="Ex: https://localhost:5001" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm p-2 border">
+                </div>
+                <button id="saveConfigButton" class="bg-emerald-600 text-white px-4 py-2 rounded-md hover:bg-emerald-700 transition-colors">Salvar</button>
+            </div>
         </div>
-        <form id="filterForm" class="grid-form">
-          <label>
-            Usuário ID
-            <input name="usuarioId" type="number" min="1" value="1" required />
-          </label>
-          <label>
-            Imóvel ID
-            <input name="imovelId" type="number" min="1" placeholder="Opcional" />
-          </label>
-          <label>
-            De
-            <input name="from" type="date" />
-          </label>
-          <label>
-            Até
-            <input name="to" type="date" />
-          </label>
-          <label>
-            Página
-            <input name="page" type="number" min="1" value="1" />
-          </label>
-          <label>
-            Itens por página
-            <input name="pageSize" type="number" min="1" value="10" />
-          </label>
-        </form>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Referência</th>
-                <th>Usuário</th>
-                <th>Imóvel</th>
-                <th>kWh</th>
-                <th>Valor</th>
-                <th>WattCoins</th>
-              </tr>
-            </thead>
-            <tbody id="consumptionTableBody">
-              <tr><td colspan="6" class="empty-state">Nenhum dado carregado.</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </section>
 
-      <section class="cards-grid">
-        <article class="card">
-          <div class="section-header">
-            <h2>Novo consumo</h2>
-          </div>
-          <form id="consumptionForm" class="stack-form">
-            <label>Usuário ID<input name="usuarioId" type="number" min="1" required /></label>
-            <label>Imóvel ID<input name="imovelId" type="number" min="1" required /></label>
-            <label>Referência<input name="referencia" type="date" required /></label>
-            <label>Consumo (kWh)<input name="kwh" type="number" min="0" step="0.01" required /></label>
-            <label>Valor (R$)<input name="valor" type="number" min="0" step="0.01" required /></label>
-            <button type="submit">Cadastrar consumo</button>
-          </form>
-        </article>
+        <header class="bg-white shadow">
+            <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900">Dashboard ESG</h1>
+                    <p class="mt-1 text-sm text-gray-500">Monitore seu consumo de energia e ganhe WattCoins.</p>
+                </div>
+                <div class="flex gap-4">
+                    <div class="bg-emerald-50 p-4 rounded-lg border border-emerald-100 flex items-center">
+                        <i class="fas fa-coins text-emerald-600 text-2xl mr-3"></i>
+                        <div>
+                            <p class="text-xs text-emerald-600 font-semibold uppercase">Suas WattCoins</p>
+                            <p id="userTotalCoins" class="text-xl font-bold text-emerald-900">0.00</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
 
-        <article class="card">
-          <div class="section-header">
-            <h2>Calcular WattCoins</h2>
-          </div>
-          <form id="coinsForm" class="stack-form">
-            <label>Usuário ID<input name="usuarioId" type="number" min="1" required /></label>
-            <label>Imóvel ID<input name="imovelId" type="number" min="1" required /></label>
-            <label>Referência<input name="referencia" type="date" required /></label>
-            <label>Consumo (kWh)<input name="kwh" type="number" min="0" step="0.01" required /></label>
-            <label>Valor (R$)<input name="valor" type="number" min="0" step="0.01" required /></label>
-            <label>kWh anterior<input name="previousKwh" type="number" min="0" step="0.01" placeholder="Opcional" /></label>
-            <button type="submit">Calcular moedas</button>
-          </form>
-          <div id="coinsResult" class="highlight-box">Nenhum cálculo realizado.</div>
-        </article>
+        <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+            <!-- Stats Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <!-- Novo Consumo -->
+                <div class="bg-white overflow-hidden shadow rounded-lg border border-gray-200">
+                    <div class="px-4 py-5 sm:p-6">
+                        <h3 class="text-lg leading-6 font-medium text-gray-900 flex items-center">
+                            <i class="fas fa-plus-circle text-emerald-500 mr-2"></i> Registrar Consumo
+                        </h3>
+                        <form id="consumptionForm" class="mt-5 space-y-4">
+                            <div>
+                                <label class="block text-xs font-medium text-gray-500 uppercase">Usuário ID</label>
+                                <input name="usuarioId" type="number" value="1" required class="mt-1 block w-full border-gray-300 rounded-md shadow-sm sm:text-sm p-2 border">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-500 uppercase">Imóvel ID</label>
+                                <input name="imovelId" type="number" value="1" required class="mt-1 block w-full border-gray-300 rounded-md shadow-sm sm:text-sm p-2 border">
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-500 uppercase">kWh</label>
+                                    <input name="kwh" type="number" step="0.01" required class="mt-1 block w-full border-gray-300 rounded-md shadow-sm sm:text-sm p-2 border">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-500 uppercase">Valor (R$)</label>
+                                    <input name="valor" type="number" step="0.01" required class="mt-1 block w-full border-gray-300 rounded-md shadow-sm sm:text-sm p-2 border">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-500 uppercase">Data Referência</label>
+                                <input name="referencia" type="date" required class="mt-1 block w-full border-gray-300 rounded-md shadow-sm sm:text-sm p-2 border">
+                            </div>
+                            <button type="submit" class="w-full bg-emerald-600 text-white py-2 px-4 rounded-md hover:bg-emerald-700 transition-colors font-medium">Cadastrar</button>
+                        </form>
+                    </div>
+                </div>
 
-        <article class="card">
-          <div class="section-header">
-            <h2>Criar meta</h2>
-          </div>
-          <form id="goalForm" class="stack-form">
-            <label>Usuário ID<input name="usuarioId" type="number" min="1" required /></label>
-            <label>Imóvel ID<input name="imovelId" type="number" min="1" required /></label>
-            <label>Redução alvo (%)<input name="targetPercentReduction" type="number" min="0" step="0.01" required /></label>
-            <label>Data inicial<input name="startDate" type="date" required /></label>
-            <label>Data final<input name="endDate" type="date" required /></label>
-            <button type="submit">Salvar meta</button>
-          </form>
-        </article>
+                <!-- Calcular Moedas -->
+                <div class="bg-white overflow-hidden shadow rounded-lg border border-gray-200">
+                    <div class="px-4 py-5 sm:p-6">
+                        <h3 class="text-lg leading-6 font-medium text-gray-900 flex items-center">
+                            <i class="fas fa-calculator text-blue-500 mr-2"></i> Simular WattCoins
+                        </h3>
+                        <form id="coinsForm" class="mt-5 space-y-4">
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-500 uppercase">kWh Atual</label>
+                                    <input name="kwh" type="number" step="0.01" required class="mt-1 block w-full border-gray-300 rounded-md shadow-sm sm:text-sm p-2 border">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-500 uppercase">kWh Anterior</label>
+                                    <input name="previousKwh" type="number" step="0.01" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm sm:text-sm p-2 border">
+                                </div>
+                            </div>
+                            <button type="submit" class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors font-medium">Calcular</button>
+                        </form>
+                        <div id="coinsResult" class="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-100 text-blue-800 text-center font-bold text-xl">
+                            --
+                        </div>
+                    </div>
+                </div>
 
-        <article class="card">
-          <div class="section-header">
-            <h2>Ranking</h2>
-            <button id="loadRankingButton" class="secondary">Atualizar ranking</button>
-          </div>
-          <form id="rankingForm" class="stack-form compact-form">
-            <label>
-              Período
-              <select name="period">
-                <option value="monthly">Mensal</option>
-                <option value="weekly">Semanal</option>
-                <option value="yearly">Anual</option>
-              </select>
-            </label>
-          </form>
-          <ol id="rankingList" class="ranking-list">
-            <li class="empty-state">Nenhum ranking carregado.</li>
-          </ol>
-        </article>
-      </section>
+                <!-- Ranking -->
+                <div id="ranking" class="bg-white overflow-hidden shadow rounded-lg border border-gray-200">
+                    <div class="px-4 py-5 sm:p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg leading-6 font-medium text-gray-900 flex items-center">
+                                <i class="fas fa-trophy text-amber-500 mr-2"></i> Ranking ESG
+                            </h3>
+                            <button id="loadRankingButton" class="text-xs text-emerald-600 font-bold hover:underline">ATUALIZAR</button>
+                        </div>
+                        <ul id="rankingList" class="divide-y divide-gray-200">
+                            <li class="py-3 text-center text-gray-500 text-sm italic">Carregue o ranking...</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
 
-      <section class="card">
-        <div class="section-header">
-          <h2>Retorno da API</h2>
-          <button id="clearLogButton" class="ghost">Limpar</button>
-        </div>
-        <pre id="apiLog" class="api-log">Aguardando interações...</pre>
-      </section>
-    </main>
-  </div>
+            <!-- Historico -->
+            <div id="historico" class="bg-white shadow rounded-lg border border-gray-200 overflow-hidden">
+                <div class="px-4 py-5 sm:px-6 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
+                    <h3 class="text-lg leading-6 font-medium text-gray-900">Histórico de Consumo</h3>
+                    <button id="loadConsumptionsButton" class="bg-white border border-gray-300 text-gray-700 px-4 py-1 rounded shadow-sm hover:bg-gray-50 text-sm font-medium">
+                        <i class="fas fa-sync-alt mr-2"></i>Atualizar
+                    </button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Data</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Imóvel</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Consumo</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Valor</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">WattCoins</th>
+                            </tr>
+                        </thead>
+                        <tbody id="consumptionTableBody" class="bg-white divide-y divide-gray-200">
+                            <tr>
+                                <td colspan="5" class="px-6 py-10 text-center text-gray-500 italic">Nenhum dado carregado.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
 
-  <script src="js/app.js"></script>
+            <!-- API Logs -->
+            <div class="mt-8">
+                <div class="flex items-center justify-between mb-2">
+                    <h4 class="text-xs font-bold text-gray-400 uppercase tracking-widest">System Logs</h4>
+                    <button id="clearLogButton" class="text-xs text-gray-400 hover:text-gray-600">Limpar</button>
+                </div>
+                <div id="apiLog" class="bg-gray-900 rounded-lg p-4 text-emerald-400 font-mono text-xs h-32 overflow-y-auto shadow-inner border border-gray-800">
+                    > Sistema pronto. Aguardando comandos...
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="fixed bottom-5 right-5 transform translate-y-20 opacity-0 transition-all duration-300 bg-gray-800 text-white px-6 py-3 rounded-lg shadow-2xl flex items-center space-x-3 z-50">
+        <span id="toastIcon"></span>
+        <span id="toastMessage"></span>
+    </div>
+
+    <script src="js/app.js"></script>
 </body>
 </html>

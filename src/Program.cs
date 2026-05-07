@@ -35,21 +35,28 @@ app.MapControllers();
 app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
 app.MapFallbackToFile("index.html");
 
-// BLOCO DE MIGRAÇÃO AUTOMÁTICA
+// BLOCO DE MIGRAÇÃO AUTOMÁTICA COM RETRY
 using (var scope = app.Services.CreateScope())
 {
-    var services = scope.ServiceProvider;
-    try
+    var context = scope.ServiceProvider.GetRequiredService<EnergyDbContext>();
+    var retries = 8;
+    while (retries > 0)
     {
-        var context = services.GetRequiredService<EnergyDbContext>();
-        // EnsureCreated cria o banco e as tabelas se elas não existirem, 
-        // ideal para quando não temos arquivos de Migration físicos.
-        context.Database.EnsureCreated();
-        Console.WriteLine("Banco de dados verificado e tabelas garantidas com sucesso.");
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine($"Nota: O banco pode estar iniciando. Erro: {ex.Message}");
+        try
+        {
+            context.Database.EnsureCreated();
+            Console.WriteLine("Banco de dados verificado e tabelas garantidas com sucesso.");
+            break;
+        }
+        catch (Exception ex)
+        {
+            retries--;
+            Console.WriteLine($"Banco não está pronto, tentando novamente em 5s... ({retries} tentativas restantes). Erro: {ex.Message}");
+            if (retries == 0)
+                Console.WriteLine("ATENÇÃO: Não foi possível criar as tabelas após todas as tentativas.");
+            else
+                Thread.Sleep(5000);
+        }
     }
 }
 
